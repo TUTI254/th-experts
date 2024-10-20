@@ -35,8 +35,25 @@ to start the dev server
 - Vite
 - Tailwindcss
 - DaisyUI
-
+- Netlify hosted
 
 ## Inspiration
 
 - The project was inspired by the [Talent Hive Experts](https://experts.talenthive.fi) Website
+
+## Demo
+
+video demo
+-responsive on all devices
+
+![Your Video Title](public/demo.mp4)
+
+- live site demo
+https://th-experts.netlify.app/
+
+
+
+
+
+
+
