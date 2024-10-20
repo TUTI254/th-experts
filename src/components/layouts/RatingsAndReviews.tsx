@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
+import { z } from 'zod';
+
+const reviewSchema = z.object({
+  author: z.string().min(1, { message: "Name is required" }),
+  rating: z.number().min(1, { message: "Rating is required" }),
+  comment: z.string().min(1, { message: "Comment is required" }),
+});
 
 interface Review {
   id: number;
@@ -13,9 +20,10 @@ export const RatingsAndReviews: React.FC = () => {
   const [comment, setComment] = useState<string>('');
   const [author, setAuthor] = useState<string>('');
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [errors, setErrors] = useState<{ author?: string; rating?: string; comment?: string }>({});
 
   useEffect(() => {
-    // Load reviews from local storage 
+    // Load reviews from local storage
     const savedReviews = localStorage.getItem('reviews');
     if (savedReviews) {
       setReviews(JSON.parse(savedReviews));
@@ -24,6 +32,26 @@ export const RatingsAndReviews: React.FC = () => {
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validationResult = reviewSchema.safeParse({
+      author,
+      rating,
+      comment,
+    });
+
+    if (!validationResult.success) {
+      // If validation fails, set the errors
+      const validationErrors = validationResult.error.format();
+      setErrors({
+        author: validationErrors.author?._errors[0],
+        rating: validationErrors.rating?._errors[0],
+        comment: validationErrors.comment?._errors[0],
+      });
+      return;
+    }
+
+    // Clear errors if validation passes
+    setErrors({});
 
     const newReview: Review = {
       id: Date.now(),
@@ -63,6 +91,7 @@ export const RatingsAndReviews: React.FC = () => {
                     onChange={(e) => setAuthor(e.target.value)}
                     placeholder="Enter your name"
                   />
+                  {errors.author && <p className="text-red-500 text-sm">{errors.author}</p>}
                 </div>
                 <div className="flex items-center mb-4">
                   <span className="mr-2">Your Rating:</span>
@@ -73,6 +102,7 @@ export const RatingsAndReviews: React.FC = () => {
                       onClick={() => setRating(star)}
                     />
                   ))}
+                  {errors.rating && <p className="text-red-500 text-sm">{errors.rating}</p>}
                 </div>
                 <textarea
                   className="textarea border bg-gray-100 w-full h-24 px-4 py-2 rounded-lg"
@@ -80,6 +110,7 @@ export const RatingsAndReviews: React.FC = () => {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 ></textarea>
+                {errors.comment && <p className="text-red-500 text-sm">{errors.comment}</p>}
                 <div className="card-actions justify-end m-4">
                   <button type="submit" className="px-4 py-2 btn bg-blue-600 text-white rounded-lg">
                     Submit Review
